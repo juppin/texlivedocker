@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+INSTALL_CMDS=( chktex latexindent latexmk synctex texcount )
+INSTALL_PATH=/usr/local/bin
+
+CMD=${0##*/}
+ARGS=${@}
+WDIR=$(pwd)
+
+if [ "${CMD}" = "texlivedocker" ] ; then
+  if [ "${ARGS}" = "install" ] ; then
+    SCRIPT_PATH=$(readlink -f texlivedocker)
+    for cmd in ${INSTALL_CMDS[*]} ; do
+      echo "Installing ${INSTALL_PATH}/${cmd}"
+      ln -sf ${SCRIPT_PATH} ${INSTALL_PATH}/${cmd}
+    done
+  else
+    echo "Call me with \"install\" to install symlinks to /usr/local/bin"
+  fi
+  exit 1
+fi
+
+docker run --interactive --rm \
+  --workdir "${WDIR}" \
+  --volume "${WDIR}":"${WDIR}" \
+  --user $(id -u):$(id -g) \
+  juppin/texlivedocker:full \
+  $CMD $ARGS
