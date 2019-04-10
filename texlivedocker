@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 INSTALL_CMDS=( chktex latexindent latexmk synctex texcount )
 INSTALL_PATH=/usr/local/bin
@@ -15,7 +16,7 @@ if [ "${CMD}" = "texlivedocker" ] ; then
       ln -sf ${SCRIPT_PATH} ${INSTALL_PATH}/${cmd}
     done
   else
-    echo "Call me with \"install\" to install symlinks to /usr/local/bin"
+    echo "Call me with \"install\" to install symlinks to ${INSTALL_PATH}"
   fi
   exit 1
 fi
