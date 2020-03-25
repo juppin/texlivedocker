@@ -14,15 +14,15 @@ WDIR=$(pwd)
 
 if [ "${CMD}" = "${SCRIPT_NAME}" ] ; then
   SCRIPT_PATH=$(readlink -f ${SCRIPT_NAME})
-  if [ "${ARGS[0]}" = "install" ] ; then
+  if [ "${ARGS[*]}" = "install" ] ; then
     echo "Installing symlinks..."
-    for cmd in ${INSTALL_CMDS[*]} ; do
+    for cmd in "${INSTALL_CMDS[@]}" ; do
       echo "Installing ${INSTALL_PATH}/${cmd}"
       ln -sf "${SCRIPT_PATH}" "${INSTALL_PATH}/${cmd}"
     done
-  elif [ "${ARGS[0]}" = "uninstall" ] ; then
+  elif [ "${ARGS[*]}" = "uninstall" ] ; then
     echo "Uninstalling symlinks..."
-    for cmd in ${INSTALL_CMDS[*]} ; do
+    for cmd in "${INSTALL_CMDS[@]}" ; do
       [ -L "${INSTALL_PATH}/${cmd}" ] && (
         echo "Removing ${INSTALL_PATH}/${cmd}"
         rm "${INSTALL_PATH}/${cmd}"
