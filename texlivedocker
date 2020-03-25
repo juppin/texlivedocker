@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# Config
+DOCKER_IMAGE="docker.dh-electronics.com:4567/docker-images/latex:latest"
+INSTALL_CMDS=( chktex latexindent latexmk synctex texcount )
+INSTALL_PATH=/usr/local/bin
+
+# Don't touch that unless you know what you're doing.
+SCRIPT_NAME=texlivedocker
+CMD=${0##*/}
+ARGS=( "${@}" )
+WDIR=$(pwd)
+
+if [ "${CMD}" = "${SCRIPT_NAME}" ] ; then
+  SCRIPT_PATH=$(readlink -f ${SCRIPT_NAME})
+  if [ "${ARGS[0]}" = "install" ] ; then
+    echo "Installing symlinks..."
+    for cmd in ${INSTALL_CMDS[*]} ; do
+      echo "Installing ${INSTALL_PATH}/${cmd}"
+      ln -sf "${SCRIPT_PATH}" "${INSTALL_PATH}/${cmd}"
+    done
+  elif [ "${ARGS[0]}" = "uninstall" ] ; then
+    echo "Uninstalling symlinks..."
+    for cmd in ${INSTALL_CMDS[*]} ; do
+      [ -L "${INSTALL_PATH}/${cmd}" ] && (
+        echo "Removing ${INSTALL_PATH}/${cmd}"
+        rm "${INSTALL_PATH}/${cmd}"
+      )
+    done
+  else
+    echo "Call \"${SCRIPT_PATH##*/} <install|uninstall>\" to install/uninstall symlinks in ${INSTALL_PATH}"
+  fi
+  exit 1
+fi
+
+if [ -z "$(docker images -q ${DOCKER_IMAGE})" ] ; then
+  echo "Didn't found local image \"${DOCKER_IMAGE}\""
+  echo "Please pull the image before first usage with:"
+  echo " $ docker pull ${DOCKER_IMAGE}"
+  exit 1
+fi
+
+docker run --interactive --rm \
+  --workdir "${WDIR}" \
+  --volume "${WDIR}":"${WDIR}" \
+  --user "$(id -u):$(id -g)" \
+  "${DOCKER_IMAGE}" \
+  "${CMD}" "${ARGS[@]}"
